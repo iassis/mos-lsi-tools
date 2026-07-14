@@ -6,9 +6,7 @@ install_plugin() {
     mkdir -p /tmp/lsi_setup
     cd /tmp/lsi_setup
 
-    # ==========================================
-    # 1. Install StorCLI (v007.3703)
-    # ==========================================
+    # --- 1. Install StorCLI (v007.3703) ---
     echo "Downloading and extracting StorCLI..."
     wget -q -O storcli.zip "https://docs.broadcom.com/docs-and-downloads/007.3703.0000.0000_MR%207.37_Storcli.zip"
     unzip -q -j storcli.zip "Unified_storcli_all_os/Ubuntu/storcli_007.3703.0000.0000_all.deb" -d /tmp/lsi_setup/
@@ -21,9 +19,7 @@ install_plugin() {
     # Clean working directory
     rm -rf /tmp/lsi_setup/*
 
-    # ==========================================
-    # 2. Install sas3flash (P15)
-    # ==========================================
+    # 2. --- Install sas3flash (P15) ---
     echo "Downloading and extracting sas3flash..."
     wget -q -O sas3flash.zip "https://docs.broadcom.com/docs-and-downloads/host-bus-adapters/host-bus-adapters-common-files/sas_sata_12g_p15/SAS3FLASH_P15.zip"
     
@@ -37,9 +33,7 @@ install_plugin() {
     # Clean working directory
     rm -rf /tmp/lsi_setup/*
 
-    # ==========================================
-    # 3. Install MegaCLI
-    # ==========================================
+    # 3. --- Install MegaCLI ---
     echo "Downloading and extracting MegaCLI..."
     wget -q -O megacli.zip "https://docs.broadcom.com/docs-and-downloads/raid-controllers/raid-controllers-common-files/8-07-14_MegaCLI.zip"
     unzip -q megacli.zip -d /tmp/lsi_setup/
