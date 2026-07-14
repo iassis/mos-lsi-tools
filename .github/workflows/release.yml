@@ -15,7 +15,7 @@ jobs:
 
       - name: Create MOS Hub Zip Package
         run: |
-          zip -r mos-lsi-tools.zip functions settings.json plugins.json README.md
+          zip -r mos-lsi-tools.zip functions settings.json README.md
 
       - name: Upload Zip Asset to Github Release
         uses: softprops/action-gh-release@v2
