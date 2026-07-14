@@ -14,38 +14,28 @@ jobs:
       - name: Checkout Repository Code
         uses: actions/checkout@v4
 
-      - name: Build Native Debian Package Layout
+      - name: Create Architecture Validation DEB
         run: |
-          # 1. Establish structural paths inside the package
-          # Creating both root-level staging and internal system paths to ensure compatibility
-          mkdir -p debian-build/opt/mos/plugins/mos-lsi-tools
-          mkdir -p debian-build/DEBIAN
-
-          # 2. Copy payload to system installation path
-          cp -r functions settings.json plugin.config.js README.md debian-build/opt/mos/plugins/mos-lsi-tools/
-
-          # 3. ALSO place the files flatly at the package root level in case the unpacker reads 'source' directly
-          cp settings.json plugin.config.js README.md debian-build/
-          cp -r functions debian-build/
-
-          # 4. Generate required Debian metadata control manifest
-          cat <<EOF > debian-build/DEBIAN/control
+          mkdir -p dummy-deb/DEBIAN
+          cat <<EOF > dummy-deb/DEBIAN/control
           Package: mos-lsi-tools
           Version: 1.0.3
           Section: utils
           Priority: optional
           Architecture: amd64
           Maintainer: iassis
-          Description: Headless plugin that installs Broadcom/LSI command-line utilities (storcli64, sas3flash, megacli) for HBA management.
+          Description: Architecture validation anchor for MOS Hub
           EOF
+          dpkg-deb --build dummy-deb mos-lsi-tools_1.0.3_amd64.deb
 
-          # 5. Compile the native package binary target
-          dpkg-deb --build debian-build mos-lsi-tools_1.0.3_amd64.deb
+      - name: Create MOS Hub Zip Package
+        run: |
+          zip -r mos-lsi-tools.zip functions settings.json plugin.config.js README.md mos-lsi-tools_1.0.3_amd64.deb
 
-      - name: Upload Deb Asset to Github Release
+      - name: Upload Zip Asset to Github Release
         uses: softprops/action-gh-release@v2
         with:
-          files: mos-lsi-tools_1.0.3_amd64.deb
+          files: mos-lsi-tools.zip
           tag_name: ${{ github.event.release.tag_name || '1.0.3' }}
           overwrite_files: true
         env:
