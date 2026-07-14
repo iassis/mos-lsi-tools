@@ -42,9 +42,7 @@ install_plugin() {
     find /tmp/lsi_setup/ -name "MegaCli64" -exec cp {} /usr/sbin/megacli64 \;
     chmod +x /usr/sbin/megacli64
 
-    # ==========================================
     # Cleanup
-    # ==========================================
     rm -rf /tmp/lsi_setup
     echo "All LSI HBA tools installed successfully!"
 }
