@@ -54,15 +54,13 @@ install_plugin() {
     echo "Downloading and extracting MegaCLI..."
     wget -q -O megacli.zip "https://docs.broadcom.com/docs-and-downloads/raid-controllers/raid-controllers-common-files/8-07-14_MegaCLI.zip"
     
-    # Unzip the RPM
-    unzip -q -j megacli.zip "Linux/MegaCli-8.07.14-1.noarch.rpm"
-    
-    # Extract the binary
-    rpm2cpio MegaCli-8.07.14-1.noarch.rpm | cpio -idmv --no-absolute-filenames > /dev/null 2>&1
+    # Unzip the internal zip archive flat
+    unzip -q -j megacli.zip "FreeBSD/MegaCli64.zip"
+    unzip -q -j MegaCli64.zip "MegaCli64"
     
     # Map raw binary location
-    if [ -f "./opt/MegaRAID/MegaCli/MegaCli64" ]; then
-        cp ./opt/MegaRAID/MegaCli/MegaCli64 /usr/sbin/megacli64
+    if [ -f "MegaCli64" ]; then
+        cp MegaCli64 /usr/sbin/megacli64
         chmod +x /usr/sbin/megacli64
         echo "megacli64 installed successfully."
     else
