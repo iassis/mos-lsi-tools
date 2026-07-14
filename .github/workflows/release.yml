@@ -17,7 +17,6 @@ jobs:
       - name: Build Native Debian Package Layout
         run: |
           # 1. Establish structural paths inside the package
-          # Note: The installer framework reads metadata directly out of /opt/mos/plugins/mos-lsi-tools/
           mkdir -p debian-build/opt/mos/plugins/mos-lsi-tools
           mkdir -p debian-build/DEBIAN
 
@@ -43,6 +42,6 @@ jobs:
         with:
           files: mos-lsi-tools_1.0.3_amd64.deb
           tag_name: ${{ github.event.release.tag_name || '1.0.3' }}
-          overwrite: true
+          overwrite_files: true # <-- Fixed from 'overwrite' to 'overwrite_files'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
