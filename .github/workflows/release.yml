@@ -13,14 +13,32 @@ jobs:
       - name: Checkout Repository Code
         uses: actions/checkout@v4
 
-      - name: Create MOS Hub Zip Package
+      - name: Build Native Debian Package Layout
         run: |
-          zip -r mos-lsi-tools.zip functions settings.json README.md
+          # 1. Establish standard Debian binary package directories
+          mkdir -p debian-build/opt/mos/plugins/mos-lsi-tools
+          mkdir -p debian-build/DEBIAN
 
-      - name: Upload Zip Asset to Github Release
+          # 2. Populate data paths
+          cp -r functions settings.json README.md debian-build/opt/mos/plugins/mos-lsi-tools/
+
+          # 3. Generate required Debian metadata manifest
+          cat <<EOF > debian-build/DEBIAN/control
+          Package: mos-lsi-tools
+          Version: 1.0.3
+          Section: utils
+          Priority: optional
+          Architecture: amd64
+          Maintainer: iassis
+          Description: Headless plugin that installs Broadcom/LSI command-line utilities (storcli64, sas3flash, megacli) for HBA management.
+          EOF
+
+          # 4. Compile the native package binary target
+          dpkg-deb --build debian-build mos-lsi-tools_1.0.3_amd64.deb
+
+      - name: Upload Deb Asset to Github Release
         uses: softprops/action-gh-release@v2
         with:
-          files: mos-lsi-tools.zip
+          files: mos-lsi-tools_1.0.3_amd64.deb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
