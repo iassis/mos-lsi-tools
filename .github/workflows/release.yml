@@ -3,6 +3,7 @@ name: Build and Package MOS Plugin
 on:
   release:
     types: [published]
+  workflow_dispatch: {}
 
 jobs:
   package:
