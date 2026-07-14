@@ -11,20 +11,16 @@ install_plugin() {
     echo "Downloading and extracting StorCLI..."
     wget -q -O storcli.zip "https://docs.broadcom.com/docs-and-downloads/007.3703.0000.0000_MR%207.37_Storcli.zip"
     
-    # Extract everything
-    unzip -q storcli.zip
+    # Extract the .deb storcli
+    unzip -q -j storcli.zip "*storcli*_all.deb"
     
-    # Find the package
-    DEB_FILE=$(find . -iname "storcli_*_all.deb" | head -n 1)
-    if [ -f "$DEB_FILE" ]; then
-        dpkg-deb -x "$DEB_FILE" ./extracted_deb
-        # Move the binary out of the extracted directory structure
-        cp ./extracted_deb/opt/MegaRAID/storcli/storcli64 /usr/sbin/storcli64
-        chmod +x /usr/sbin/storcli64
-        echo "storcli64 installed successfully."
-    else
-        echo "Error: StorCLI .deb archive not found."
-    fi
+    # Unpack the deb package
+    dpkg-deb -x storcli_007.3703.0000.0000_all.deb ./extracted_deb
+    
+    # Move the binary
+    cp ./extracted_deb/opt/MegaRAID/storcli/storcli64 /usr/sbin/storcli64
+    chmod +x /usr/sbin/storcli64
+    echo "storcli64 installed successfully."
 
     # Wipe working directory
     rm -rf /tmp/lsi_setup/*
@@ -33,16 +29,12 @@ install_plugin() {
     echo "Downloading and extracting sas3flash..."
     wget -q -O sas3flash.zip "https://docs.broadcom.com/docs-and-downloads/host-bus-adapters/host-bus-adapters-common-files/sas_sata_12g_p15/SAS3FLASH_P15.zip"
     
-    unzip -q sas3flash.zip
+    # Extract the binary
+    unzip -q -j sas3flash.zip "*linux_x64_rel/sas3flash"
     
-    FLASH_BIN=$(find . -type f -path "*/sas3flash_linux_x64_rel/sas3flash" | head -n 1)
-    if [ -f "$FLASH_BIN" ]; then
-        cp "$FLASH_BIN" /usr/sbin/sas3flash
-        chmod +x /usr/sbin/sas3flash
-        echo "sas3flash installed successfully."
-    else
-        echo "Error: sas3flash binary path not matched."
-    fi
+    cp sas3flash /usr/sbin/sas3flash
+    chmod +x /usr/sbin/sas3flash
+    echo "sas3flash installed successfully."
 
     # Wipe working directory
     rm -rf /tmp/lsi_setup/*
@@ -50,21 +42,14 @@ install_plugin() {
     # 3. Install MegaCLI
     echo "Downloading and extracting MegaCLI..."
     wget -q -O megacli.zip "https://docs.broadcom.com/docs-and-downloads/raid-controllers/raid-controllers-common-files/8-07-14_MegaCLI.zip"
-    unzip -q megacli.zip
     
-    NESTED_ZIP=$(find . -name "MegaCli64.zip" | head -n 1)
-    if [ -f "$NESTED_ZIP" ]; then
-        unzip -q "$NESTED_ZIP"
-    fi
+    # Unzip the megacli64 binary
+    unzip -q -j megacli.zip "*MegaCli64.zip"
+    unzip -q -j MegaCli64.zip "MegaCli64"
     
-    CLI_BIN=$(find . -name "MegaCli64" | head -n 1)
-    if [ -f "$CLI_BIN" ]; then
-        cp "$CLI_BIN" /usr/sbin/megacli64
-        chmod +x /usr/sbin/megacli64
-        echo "megacli64 installed successfully."
-    else
-        echo "Error: MegaCli64 binary path not matched."
-    fi
+    cp MegaCli64 /usr/sbin/megacli64
+    chmod +x /usr/sbin/megacli64
+    echo "megacli64 installed successfully."
 
     # Cleanup
     rm -rf /tmp/lsi_setup
