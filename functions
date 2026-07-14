@@ -10,15 +10,24 @@ install_plugin() {
     # 1. Install StorCLI (v007.3703)
     echo "Downloading and extracting StorCLI..."
     wget -q -O storcli.zip "https://docs.broadcom.com/docs-and-downloads/007.3703.0000.0000_MR%207.37_Storcli.zip"
+    
+    # Extract 1st zip file
     unzip -q storcli.zip
     
-    # Extract the .deb file
-    dpkg-deb -x Unified_storcli_all_os/Ubuntu/storcli_007.3703.0000.0000_all.deb ./extracted_deb
+    # Extract the 2nd zip
+    unzip -q -j "storcli_rel/Unified_storcli_all_os.zip" "*Ubuntu/storcli*_all.deb"
     
-    # Copy the binary
-    cp ./extracted_deb/opt/MegaRAID/storcli/storcli64 /usr/sbin/storcli64
-    chmod +x /usr/sbin/storcli64
-    echo "storcli64 installed successfully."
+    # Unpack the deb package
+    dpkg-deb -x storcli_007.3703.0000.0000_all.deb ./extracted_deb
+    
+    # Move the binary
+    if [ -f "./extracted_deb/opt/MegaRAID/storcli/storcli64" ]; then
+        cp ./extracted_deb/opt/MegaRAID/storcli/storcli64 /usr/sbin/storcli64
+        chmod +x /usr/sbin/storcli64
+        echo "storcli64 installed successfully."
+    else
+        echo "Error: storcli64 binary extraction failed."
+    fi
 
     # Wipe working directory
     rm -rf /tmp/lsi_setup/*
@@ -27,12 +36,16 @@ install_plugin() {
     echo "Downloading and extracting sas3flash..."
     wget -q -O sas3flash.zip "https://docs.broadcom.com/docs-and-downloads/host-bus-adapters/host-bus-adapters-common-files/sas_sata_12g_p15/SAS3FLASH_P15.zip"
     
-    unzip -q sas3flash.zip
+    # Extract the linux binary
+    unzip -q -j sas3flash.zip "*/sas3flash_linux_x64_rel/sas3flash"
     
-    # Copy the sas3flash file and make it executable
-    cp sas3flash_linux_x64_rel/sas3flash /usr/sbin/sas3flash
-    chmod +x /usr/sbin/sas3flash
-    echo "sas3flash installed successfully."
+    if [ -f "sas3flash" ]; then
+        cp sas3flash /usr/sbin/sas3flash
+        chmod +x /usr/sbin/sas3flash
+        echo "sas3flash installed successfully."
+    else
+        echo "Error: sas3flash binary extraction failed."
+    fi
 
     # Wipe working directory
     rm -rf /tmp/lsi_setup/*
@@ -41,14 +54,22 @@ install_plugin() {
     echo "Downloading and extracting MegaCLI..."
     wget -q -O megacli.zip "https://docs.broadcom.com/docs-and-downloads/raid-controllers/raid-controllers-common-files/8-07-14_MegaCLI.zip"
     
-    unzip -q megacli.zip
-    unzip -q MegaCli64.zip
+    # Unzip the megacli executable
+    unzip -q -j megacli.zip "Linux/MegaCli-8.07.14-1.noarch.rpm"
     
-    cp MegaCli64 /usr/sbin/megacli64
-    chmod +x /usr/sbin/megacli64
-    echo "megacli64 installed successfully."
+    # Extract the binary
+    rpm2cpio MegaCli-8.07.14-1.noarch.rpm | cpio -idmv --no-absolute-filenames > /dev/null 2>&1
+    
+    # Map raw binary location
+    if [ -f "./opt/MegaRAID/MegaCli/MegaCli64" ]; then
+        cp ./opt/MegaRAID/MegaCli/MegaCli64 /usr/sbin/megacli64
+        chmod +x /usr/sbin/megacli64
+        echo "megacli64 installed successfully."
+    else
+        echo "Error: megacli64 extraction failed."
+    fi
 
-    # Cleaning
+    # Cleaning up
     rm -rf /tmp/lsi_setup
     echo "All LSI HBA tools deployment complete!"
 }
