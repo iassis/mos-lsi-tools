@@ -16,14 +16,15 @@ jobs:
 
       - name: Build Native Debian Package Layout
         run: |
-          # 1. Establish standard Debian binary package directories
+          # 1. Establish structural paths inside the package
+          # Note: The installer framework reads metadata directly out of /opt/mos/plugins/mos-lsi-tools/
           mkdir -p debian-build/opt/mos/plugins/mos-lsi-tools
           mkdir -p debian-build/DEBIAN
 
-          # 2. Populate data paths (added plugin.config.js here)
+          # 2. Copy the plugin execution payload files
           cp -r functions settings.json plugin.config.js README.md debian-build/opt/mos/plugins/mos-lsi-tools/
 
-          # 3. Generate required Debian metadata manifest
+          # 3. Generate required Debian metadata control manifest
           cat <<EOF > debian-build/DEBIAN/control
           Package: mos-lsi-tools
           Version: 1.0.3
@@ -41,7 +42,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: mos-lsi-tools_1.0.3_amd64.deb
-          tag_name: ${{ github.event.release.tag_name || '1.0.3' }} # Fallback tag if run manually
+          tag_name: ${{ github.event.release.tag_name || '1.0.3' }}
           overwrite: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
