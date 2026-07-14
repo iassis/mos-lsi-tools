@@ -1,0 +1,23 @@
+name: Build and Package MOS Plugin
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository Code
+        uses: actions/checkout@v4
+
+      - name: Create MOS Hub Zip Package
+        run: |
+          zip -r mos-lsi-tools.zip functions settings.json README.md
+
+      - name: Upload Zip Asset to Github Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: mos-lsi-tools.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
