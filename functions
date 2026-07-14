@@ -10,14 +10,12 @@ install_plugin() {
     # 1. Install StorCLI (v007.3703)
     echo "Downloading and extracting StorCLI..."
     wget -q -O storcli.zip "https://docs.broadcom.com/docs-and-downloads/007.3703.0000.0000_MR%207.37_Storcli.zip"
+    unzip -q storcli.zip
     
-    # Extract the .deb storcli
-    unzip -q -j storcli.zip "*storcli*_all.deb"
+    # Extract the .deb file
+    dpkg-deb -x Unified_storcli_all_os/Ubuntu/storcli_007.3703.0000.0000_all.deb ./extracted_deb
     
-    # Unpack the deb package
-    dpkg-deb -x storcli_007.3703.0000.0000_all.deb ./extracted_deb
-    
-    # Move the binary
+    # Copy the binary
     cp ./extracted_deb/opt/MegaRAID/storcli/storcli64 /usr/sbin/storcli64
     chmod +x /usr/sbin/storcli64
     echo "storcli64 installed successfully."
@@ -29,10 +27,10 @@ install_plugin() {
     echo "Downloading and extracting sas3flash..."
     wget -q -O sas3flash.zip "https://docs.broadcom.com/docs-and-downloads/host-bus-adapters/host-bus-adapters-common-files/sas_sata_12g_p15/SAS3FLASH_P15.zip"
     
-    # Extract the binary
-    unzip -q -j sas3flash.zip "*linux_x64_rel/sas3flash"
+    unzip -q sas3flash.zip
     
-    cp sas3flash /usr/sbin/sas3flash
+    # Copy the sas3flash file and make it executable
+    cp sas3flash_linux_x64_rel/sas3flash /usr/sbin/sas3flash
     chmod +x /usr/sbin/sas3flash
     echo "sas3flash installed successfully."
 
@@ -43,15 +41,14 @@ install_plugin() {
     echo "Downloading and extracting MegaCLI..."
     wget -q -O megacli.zip "https://docs.broadcom.com/docs-and-downloads/raid-controllers/raid-controllers-common-files/8-07-14_MegaCLI.zip"
     
-    # Unzip the megacli64 binary
-    unzip -q -j megacli.zip "*MegaCli64.zip"
-    unzip -q -j MegaCli64.zip "MegaCli64"
+    unzip -q megacli.zip
+    unzip -q MegaCli64.zip
     
     cp MegaCli64 /usr/sbin/megacli64
     chmod +x /usr/sbin/megacli64
     echo "megacli64 installed successfully."
 
-    # Cleanup
+    # Cleaning
     rm -rf /tmp/lsi_setup
     echo "All LSI HBA tools deployment complete!"
 }
