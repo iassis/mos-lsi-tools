@@ -18,7 +18,7 @@ Because these tools are strictly command-line utilities, this plugin is complete
 
 ## Usage
 
-After installing the plugin via the MOS Hub, you must execute the application with root privileges[cite: 1]. You can access it globally from your terminal:
+After installing the plugin via the MOS Hub, you must execute the application with root privileges. You can access it globally from your terminal:
 
 ```bash
 sudo storcli64 /c0 show
