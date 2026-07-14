@@ -20,8 +20,8 @@ jobs:
           mkdir -p debian-build/opt/mos/plugins/mos-lsi-tools
           mkdir -p debian-build/DEBIAN
 
-          # 2. Populate data paths
-          cp -r functions settings.json README.md debian-build/opt/mos/plugins/mos-lsi-tools/
+          # 2. Populate data paths (added plugin.config.js here)
+          cp -r functions settings.json plugin.config.js README.md debian-build/opt/mos/plugins/mos-lsi-tools/
 
           # 3. Generate required Debian metadata manifest
           cat <<EOF > debian-build/DEBIAN/control
