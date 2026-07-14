@@ -54,7 +54,7 @@ install_plugin() {
     echo "Downloading and extracting MegaCLI..."
     wget -q -O megacli.zip "https://docs.broadcom.com/docs-and-downloads/raid-controllers/raid-controllers-common-files/8-07-14_MegaCLI.zip"
     
-    # Extract the folder
+    # Extract the 1st zip file path
     unzip -q -j megacli.zip "FreeBSD/MegaCli64.zip"
     unzip -q -j MegaCli64.zip "MegaCli64"
     
