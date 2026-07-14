@@ -8,7 +8,7 @@ This allows users to easily manage, flash and monitor their LSI Host Bus Adapter
 
 ## Overview
 
-Because these tools are strictly command-line utilities, this plugin is completely **headless**, there should be no dashboard or menu in the MOS web UI. 
+Note: This is a CLI-only plugin. It runs entirely via the terminal, so no web GUI components or dashboard pages are installed.
 
 ### Included Binaries
 * `storcli64` (v007.3703.0000.0000)
