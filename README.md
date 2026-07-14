@@ -47,3 +47,12 @@ sudo megacli64 -AdpAllInfo -aALL
 # List all physical drives connected to the controllers
 sudo megacli64 -PDList -aALL
 ```
+
+---
+
+### Additional references
+
+- [Nate Colin's StorCLI Documentation](https://github.com/MSU-Libraries/storcli-doc)
+- [Broadcom StorCLI Reference Guide](https://docs.broadcom.com/doc/12352476)
+- [HPE StorCLI Reference Guide](https://support.hpe.com/hpesc/public/docDisplay?docId=a00048288en_us&docLocale=en_US)
+- [IBM Power9 StorCLI Manual](https://www.ibm.com/docs/en/power9/0009-ESS?topic=22p-storcli-commands)
