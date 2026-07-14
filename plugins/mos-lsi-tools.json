@@ -1,0 +1,11 @@
+{
+  "name": "mos-lsi-tools",
+  "title": "LSI HBA Tools",
+  "author": "iassis",
+  "version": "1.0.3",
+  "description": "Headless plugin that installs Broadcom/LSI command-line utilities (storcli64, sas3flash, megacli) for HBA management.",
+  "category": "System",
+  "headless": true,
+  "url": "https://github.com/iassis/mos-lsi-tools/releases/latest/download/mos-lsi-tools.zip",
+  "support": "https://github.com/iassis/mos-lsi-tools/issues"
+}
