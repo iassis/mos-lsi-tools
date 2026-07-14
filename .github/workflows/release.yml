@@ -41,5 +41,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: mos-lsi-tools_1.0.3_amd64.deb
+          tag_name: ${{ github.event.release.tag_name || '1.0.3' }} # Fallback tag if run manually
+          overwrite: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
