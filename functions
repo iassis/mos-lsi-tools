@@ -3,44 +3,70 @@
 install_plugin() {
     echo "Starting installation of LSI HBA tools..."
 
-    # 1. Create a temporary working directory
     mkdir -p /tmp/lsi_setup
     cd /tmp/lsi_setup
 
-    # 2. Download the latest StorCLI from Broadcom as of 13th July 2026
-    echo "Downloading StorCLI..."
+    # ==========================================
+    # 1. Install StorCLI (v007.3703)
+    # ==========================================
+    echo "Downloading and extracting StorCLI..."
     wget -q -O storcli.zip "https://docs.broadcom.com/docs-and-downloads/007.3703.0000.0000_MR%207.37_Storcli.zip"
-    
-    # 3. Extract the specific Ubuntu .deb package
-    echo "Extracting StorCLI..."
     unzip -q -j storcli.zip "Unified_storcli_all_os/Ubuntu/storcli_007.3703.0000.0000_all.deb" -d /tmp/lsi_setup/
-    
-    # 4. Unpack the .deb file to get the raw binaries
     ar p storcli_007.3703.0000.0000_all.deb data.tar.xz | tar xJ -C /tmp/lsi_setup
     
-    # 5. Move the binary into the system path
-    echo "Installing storcli64 to system path..."
+    echo "Moving storcli64 to system path..."
     cp /tmp/lsi_setup/opt/MegaRAID/storcli/storcli64 /usr/sbin/storcli64
-    
-    # 6. Make the binary executable
     chmod +x /usr/sbin/storcli64
 
-    # 7. Clean up temporary files
-    rm -rf /tmp/lsi_setup
+    # Clean working directory
+    rm -rf /tmp/lsi_setup/*
+
+    # ==========================================
+    # 2. Install sas3flash (P15)
+    # ==========================================
+    echo "Downloading and extracting sas3flash..."
+    wget -q -O sas3flash.zip "https://docs.broadcom.com/docs-and-downloads/host-bus-adapters/host-bus-adapters-common-files/sas_sata_12g_p15/SAS3FLASH_P15.zip"
     
-    echo "LSI HBA tools installed successfully!"
+    # Extract the binary
+    unzip -q -j sas3flash.zip "sas3flash_linux_x64_rel/sas3flash" -d /tmp/lsi_setup/
+    
+    echo "Moving sas3flash to system path..."
+    cp /tmp/lsi_setup/sas3flash /usr/sbin/sas3flash
+    chmod +x /usr/sbin/sas3flash
+
+    # Clean working directory
+    rm -rf /tmp/lsi_setup/*
+
+    # ==========================================
+    # 3. Install MegaCLI
+    # ==========================================
+    echo "Downloading and extracting MegaCLI..."
+    wget -q -O megacli.zip "https://docs.broadcom.com/docs-and-downloads/raid-controllers/raid-controllers-common-files/8-07-14_MegaCLI.zip"
+    unzip -q megacli.zip -d /tmp/lsi_setup/
+    
+    # Locate and extract the Linux binary
+    find /tmp/lsi_setup/ -name "MegaCli64" -exec cp {} /usr/sbin/megacli64 \;
+    chmod +x /usr/sbin/megacli64
+
+    # ==========================================
+    # Cleanup
+    # ==========================================
+    rm -rf /tmp/lsi_setup
+    echo "All LSI HBA tools installed successfully!"
 }
 
 uninstall_plugin() {
     echo "Removing LSI HBA tools..."
     
-    # Delete the binary from the system
+    # Clean up all the binaries
     rm -f /usr/sbin/storcli64
+    rm -f /usr/sbin/sas3flash
+    rm -f /usr/sbin/megacli64
     
-    echo "LSI HBA tools removed."
+    echo "LSI HBA tools removed cleanly."
 }
 
-# MOS hook logic
+# MOS Hub hook logic
 case "$1" in
     install)
         install_plugin
