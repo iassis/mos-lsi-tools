@@ -3,7 +3,7 @@
 install_plugin() {
     echo "Starting installation of LSI HBA tools..."
 
-    # Create a working directory
+    # Create working directory
     mkdir -p /tmp/lsi_setup
     cd /tmp/lsi_setup
 
@@ -14,10 +14,11 @@ install_plugin() {
     # Extract everything
     unzip -q storcli.zip
     
-    # Find the package and unpack it
-    DEB_FILE=$(find . -name "storcli_*_all.deb" | head -n 1)
+    # Find the package
+    DEB_FILE=$(find . -iname "storcli_*_all.deb" | head -n 1)
     if [ -f "$DEB_FILE" ]; then
         dpkg-deb -x "$DEB_FILE" ./extracted_deb
+        # Move the binary out of the extracted directory structure
         cp ./extracted_deb/opt/MegaRAID/storcli/storcli64 /usr/sbin/storcli64
         chmod +x /usr/sbin/storcli64
         echo "storcli64 installed successfully."
@@ -32,10 +33,8 @@ install_plugin() {
     echo "Downloading and extracting sas3flash..."
     wget -q -O sas3flash.zip "https://docs.broadcom.com/docs-and-downloads/host-bus-adapters/host-bus-adapters-common-files/sas_sata_12g_p15/SAS3FLASH_P15.zip"
     
-    # Extract files
     unzip -q sas3flash.zip
     
-    # Locate the executable path
     FLASH_BIN=$(find . -type f -path "*/sas3flash_linux_x64_rel/sas3flash" | head -n 1)
     if [ -f "$FLASH_BIN" ]; then
         cp "$FLASH_BIN" /usr/sbin/sas3flash
@@ -53,13 +52,11 @@ install_plugin() {
     wget -q -O megacli.zip "https://docs.broadcom.com/docs-and-downloads/raid-controllers/raid-controllers-common-files/8-07-14_MegaCLI.zip"
     unzip -q megacli.zip
     
-    # Extract the nested binary
     NESTED_ZIP=$(find . -name "MegaCli64.zip" | head -n 1)
     if [ -f "$NESTED_ZIP" ]; then
         unzip -q "$NESTED_ZIP"
     fi
     
-    # Find and map the target 64-bit binary
     CLI_BIN=$(find . -name "MegaCli64" | head -n 1)
     if [ -f "$CLI_BIN" ]; then
         cp "$CLI_BIN" /usr/sbin/megacli64
@@ -69,7 +66,7 @@ install_plugin() {
         echo "Error: MegaCli64 binary path not matched."
     fi
 
-    # Cleaning up
+    # Cleanup
     rm -rf /tmp/lsi_setup
     echo "All LSI HBA tools deployment complete!"
 }
@@ -77,7 +74,6 @@ install_plugin() {
 uninstall_plugin() {
     echo "Removing LSI HBA tools..."
     
-    # Wipe all custom binaries
     rm -f /usr/sbin/storcli64
     rm -f /usr/sbin/sas3flash
     rm -f /usr/sbin/megacli64
@@ -85,7 +81,6 @@ uninstall_plugin() {
     echo "LSI HBA tools removed cleanly."
 }
 
-# Execution hook for MOS Hub
 case "$1" in
     install)
         install_plugin
