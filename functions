@@ -11,7 +11,7 @@ install_plugin() {
     echo "Downloading and extracting StorCLI..."
     wget -q -O storcli.zip "https://docs.broadcom.com/docs-and-downloads/007.3703.0000.0000_MR%207.37_Storcli.zip"
     
-    # Extract 1st zip file
+    # Extract the 1st zip
     unzip -q storcli.zip
     
     # Extract the 2nd zip
@@ -54,7 +54,7 @@ install_plugin() {
     echo "Downloading and extracting MegaCLI..."
     wget -q -O megacli.zip "https://docs.broadcom.com/docs-and-downloads/raid-controllers/raid-controllers-common-files/8-07-14_MegaCLI.zip"
     
-    # Unzip the megacli executable
+    # Unzip the RPM
     unzip -q -j megacli.zip "Linux/MegaCli-8.07.14-1.noarch.rpm"
     
     # Extract the binary
