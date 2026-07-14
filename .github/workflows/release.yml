@@ -17,13 +17,18 @@ jobs:
       - name: Build Native Debian Package Layout
         run: |
           # 1. Establish structural paths inside the package
+          # Creating both root-level staging and internal system paths to ensure compatibility
           mkdir -p debian-build/opt/mos/plugins/mos-lsi-tools
           mkdir -p debian-build/DEBIAN
 
-          # 2. Copy the plugin execution payload files
+          # 2. Copy payload to system installation path
           cp -r functions settings.json plugin.config.js README.md debian-build/opt/mos/plugins/mos-lsi-tools/
 
-          # 3. Generate required Debian metadata control manifest
+          # 3. ALSO place the files flatly at the package root level in case the unpacker reads 'source' directly
+          cp settings.json plugin.config.js README.md debian-build/
+          cp -r functions debian-build/
+
+          # 4. Generate required Debian metadata control manifest
           cat <<EOF > debian-build/DEBIAN/control
           Package: mos-lsi-tools
           Version: 1.0.3
@@ -34,7 +39,7 @@ jobs:
           Description: Headless plugin that installs Broadcom/LSI command-line utilities (storcli64, sas3flash, megacli) for HBA management.
           EOF
 
-          # 4. Compile the native package binary target
+          # 5. Compile the native package binary target
           dpkg-deb --build debian-build mos-lsi-tools_1.0.3_amd64.deb
 
       - name: Upload Deb Asset to Github Release
@@ -42,6 +47,6 @@ jobs:
         with:
           files: mos-lsi-tools_1.0.3_amd64.deb
           tag_name: ${{ github.event.release.tag_name || '1.0.3' }}
-          overwrite_files: true # <-- Fixed from 'overwrite' to 'overwrite_files'
+          overwrite_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
