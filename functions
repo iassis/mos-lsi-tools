@@ -54,20 +54,13 @@ install_plugin() {
     echo "Downloading and extracting MegaCLI..."
     wget -q -O megacli.zip "https://docs.broadcom.com/docs-and-downloads/raid-controllers/raid-controllers-common-files/8-07-14_MegaCLI.zip"
     
-    # Unzip the RPM
-    unzip -q -j megacli.zip "Linux/MegaCli-8.07.14-1.noarch.rpm"
-    
-    # Pure-bash extraction trick to bypass the missing 'rpm2cpio' dependency entirely
-    # Finds the exact start of the compressed CPIO archive inside the RPM and strips the header
-    OFFSET=$(grep -a -b -o -m 1 $'070701' MegaCli-8.07.14-1.noarch.rpm | cut -d: -f1)
-    if [ ! -z "$OFFSET" ]; then
-        dd if=MegaCli-8.07.14-1.noarch.rpm bs=1 skip="$OFFSET" of=archive.cpio 2>/dev/null
-        cpio -idmv --no-absolute-filenames < archive.cpio > /dev/null 2>&1
-    fi
+    # Extract the zip
+    unzip -q -j megacli.zip "FreeBSD/MegaCli64.zip"
+    unzip -q -j MegaCli64.zip "MegaCli64"
     
     # Map raw binary location
-    if [ -f "./opt/MegaRAID/MegaCli/MegaCli64" ]; then
-        cp ./opt/MegaRAID/MegaCli/MegaCli64 /usr/sbin/megacli64
+    if [ -f "MegaCli64" ]; then
+        cp MegaCli64 /usr/sbin/megacli64
         chmod +x /usr/sbin/megacli64
         echo "megacli64 installed successfully."
     else
