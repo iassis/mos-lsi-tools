@@ -30,15 +30,12 @@ jobs:
 
       - name: Create MOS Hub Zip Package
         run: |
-          # 1. Create a staging directory named exactly after your plugin
-          mkdir -p staging/mos-lsi-tools
+          # 1. Create the mandatory 'page' directory and copy the config file into it
+          mkdir -p page
+          cp plugin.config.js page/
           
-          # 2. Copy all required files INTO this wrapper directory
-          cp -r functions settings.json plugin.config.js README.md mos-lsi-tools_1.0.3_amd64.deb staging/mos-lsi-tools/
-          
-          # 3. Change into the staging folder and zip the wrapper folder itself
-          cd staging
-          zip -r ../mos-lsi-tools.zip mos-lsi-tools/
+          # 2. Zip the files flatly at the root, including the new page/ structure
+          zip -r mos-lsi-tools.zip functions settings.json page README.md mos-lsi-tools_1.0.3_amd64.deb
 
       - name: Upload Zip Asset to Github Release
         uses: softprops/action-gh-release@v2
