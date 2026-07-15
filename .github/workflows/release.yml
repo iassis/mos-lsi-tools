@@ -46,23 +46,25 @@ jobs:
           PKG_NAME="mos-lsi-tools-${VERSION}-1+mos-plugin"
           PKG_DIR="${PKG_NAME}_amd64"
 
-          # 1. Create native OS directory paths
+          # 1. Establish absolute target system execution and web directory paths
           mkdir -p ${PKG_DIR}/usr/bin/plugins
           mkdir -p ${PKG_DIR}/var/www/mos-plugins/mos-lsi-tools
           mkdir -p ${PKG_DIR}/DEBIAN
 
-          # 2. Copy your backend LSI scripts into the native execution path
-          cp -R functions/* ${PKG_DIR}/usr/bin/plugins/ 2>/dev/null || cp -R functions ${PKG_DIR}/usr/bin/plugins/
+          # 2. Copy the functional HBA logic binaries/scripts
+          if [ -d "functions" ]; then
+            cp -R functions/* ${PKG_DIR}/usr/bin/plugins/ 2>/dev/null || cp -R functions ${PKG_DIR}/usr/bin/plugins/
+          fi
           chmod +x ${PKG_DIR}/usr/bin/plugins/* || true
 
-          # 3. Copy Vite's compiled assets
+          # 3. Copy Vite's target dist compiled asset bundle
           cp -R page/dist/mos-lsi-tools/* ${PKG_DIR}/var/www/mos-plugins/mos-lsi-tools/
 
-          # 4. EXPLICITLY copy configuration anchors from the page folder source
+          # 4. CRUCIAL: Safe-guard drop raw config descriptors flat into the package target directory
           cp page/plugin.config.js ${PKG_DIR}/var/www/mos-plugins/mos-lsi-tools/
-          cp settings.json ${PKG_DIR}/var/www/mos-plugins/mos-lsi-tools/ || true
+          cp settings.json ${PKG_DIR}/var/www/mos-plugins/mos-lsi-tools/
 
-          # 5. Create standard DEBIAN control file metadata
+          # 5. Populate standard Debian application controls
           cat > ${PKG_DIR}/DEBIAN/control << EOF
           Package: mos-lsi-tools-plugin
           Version: ${VERSION}-1+mos-plugin
@@ -71,7 +73,7 @@ jobs:
           Description: Broadcom/LSI HBA Command-Line Management Utilities for MOS
           EOF
 
-          # 6. Create postinst permissions script
+          # 6. Establish runtime script permissions
           cat > ${PKG_DIR}/DEBIAN/postinst << 'EOF'
           #!/bin/bash
           chmod -R +x /usr/bin/plugins/
