@@ -1,47 +1,91 @@
-name: Build and Package MOS Plugin
+name: Build and Release MOS LSI Tools
 
 on:
   release:
     types: [published]
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (e.g. 1.0.3)'
+        required: true
+        default: '1.0.3'
 
 jobs:
-  package:
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Checkout Repository Code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Create Architecture Validation DEB
+      - name: Set version
+        id: version
         run: |
-          mkdir -p dummy-deb/DEBIAN
-          cat <<EOF > dummy-deb/DEBIAN/control
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="${GITHUB_REF#refs/tags/}"
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Build Vue plugin page
+        working-directory: page
+        run: |
+          npm install
+          npm run build
+
+      - name: Create package structure
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+          PKG_DIR="mos-lsi-tools_amd64"
+
+          # 1. Create strict native OS directory paths
+          mkdir -p ${PKG_DIR}/opt/mos-lsi-tools
+          mkdir -p ${PKG_DIR}/var/www/mos-plugins/mos-lsi-tools
+          mkdir -p ${PKG_DIR}/DEBIAN
+
+          # 2. Copy your backend LSI scripts and configuration
+          cp -R functions ${PKG_DIR}/opt/mos-lsi-tools/
+          cp settings.json ${PKG_DIR}/opt/mos-lsi-tools/ || true
+
+          # 3. Copy the compiled Vue frontend into the MOS web directory
+          # Using a wildcard so it works even if the template is still named openzfs internally
+          cp -R page/dist/*/* ${PKG_DIR}/var/www/mos-plugins/mos-lsi-tools/ 2>/dev/null || cp -R page/dist/* ${PKG_DIR}/var/www/mos-plugins/mos-lsi-tools/
+
+          # 4. Create DEBIAN metadata
+          cat > ${PKG_DIR}/DEBIAN/control << EOF
           Package: mos-lsi-tools
-          Version: 1.0.3
-          Section: utils
-          Priority: optional
+          Version: ${VERSION}
           Architecture: amd64
           Maintainer: iassis
-          Description: Architecture validation anchor for MOS Hub
+          Description: Headless plugin that installs Broadcom/LSI command-line utilities for HBA management.
           EOF
-          dpkg-deb --build dummy-deb mos-lsi-tools_1.0.3_amd64.deb
 
-      - name: Create MOS Hub Zip Package
+          # 5. Make sure your scripts remain executable after installation
+          cat > ${PKG_DIR}/DEBIAN/postinst << 'EOF'
+          #!/bin/bash
+          chmod -R +x /opt/mos-lsi-tools/functions/
+          exit 0
+          EOF
+          chmod +x ${PKG_DIR}/DEBIAN/postinst
+
+      - name: Build native .deb package
         run: |
-          # 1. Create the mandatory 'page' directory and copy the config file into it
-          mkdir -p page
-          cp plugin.config.js page/
-          
-          # 2. Zip the files flatly at the root, including the new page/ structure
-          zip -r mos-lsi-tools.zip functions settings.json page README.md mos-lsi-tools_1.0.3_amd64.deb
+          PKG_DIR="mos-lsi-tools_amd64"
+          DEB_FILE="mos-lsi-tools_${{ steps.version.outputs.VERSION }}_amd64.deb"
+          dpkg-deb --build ${PKG_DIR} ${DEB_FILE}
 
-      - name: Upload Zip Asset to Github Release
+      - name: Upload DEB to Github Release
         uses: softprops/action-gh-release@v2
         with:
-          files: mos-lsi-tools.zip
-          tag_name: ${{ github.event.release.tag_name || '1.0.3' }}
+          files: mos-lsi-tools_${{ steps.version.outputs.VERSION }}_amd64.deb
+          tag_name: ${{ steps.version.outputs.VERSION }}
           overwrite_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
