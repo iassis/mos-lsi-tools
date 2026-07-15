@@ -43,54 +43,56 @@ jobs:
       - name: Create package structure
         run: |
           VERSION=${{ steps.version.outputs.VERSION }}
-          PKG_DIR="mos-lsi-tools_amd64"
+          PKG_NAME="mos-lsi-tools-${VERSION}-1+mos-plugin"
+          PKG_DIR="${PKG_NAME}_amd64"
 
           # 1. Create native OS directory paths
-          mkdir -p ${PKG_DIR}/opt/mos-lsi-tools
+          mkdir -p ${PKG_DIR}/usr/bin/plugins
           mkdir -p ${PKG_DIR}/var/www/mos-plugins/mos-lsi-tools
           mkdir -p ${PKG_DIR}/DEBIAN
 
-          # 2. Copy your backend LSI scripts and configuration
-          cp -R functions ${PKG_DIR}/opt/mos-lsi-tools/
-          cp settings.json ${PKG_DIR}/opt/mos-lsi-tools/ || true
+          # 2. Copy your backend LSI scripts into the native execution path
+          cp -R functions/* ${PKG_DIR}/usr/bin/plugins/ 2>/dev/null || cp -R functions ${PKG_DIR}/usr/bin/plugins/
+          chmod +x ${PKG_DIR}/usr/bin/plugins/* || true
 
-          # 3. Copy the compiled Vue frontend into the web directory path
-          cp -R page/dist/*/* ${PKG_DIR}/var/www/mos-plugins/mos-lsi-tools/ 2>/dev/null || cp -R page/dist/* ${PKG_DIR}/var/www/mos-plugins/mos-lsi-tools/
+          # 3. Explicitly copy Vite's exact distribution assets into the MOS web directory
+          cp -R page/dist/mos-lsi-tools/* ${PKG_DIR}/var/www/mos-plugins/mos-lsi-tools/
 
-          # 4. Create DEBIAN metadata
+          # 4. Create standard DEBIAN control file metadata
           cat > ${PKG_DIR}/DEBIAN/control << EOF
-          Package: mos-lsi-tools
-          Version: ${VERSION}
+          Package: mos-lsi-tools-plugin
+          Version: ${VERSION}-1+mos-plugin
           Architecture: amd64
           Maintainer: iassis
-          Description: Headless plugin that installs Broadcom/LSI command-line utilities for HBA management.
+          Description: Broadcom/LSI HBA Command-Line Management Utilities for MOS
           EOF
 
-          # 5. Ensure internal scripts stay executable
+          # 5. Create postinst permissions script
           cat > ${PKG_DIR}/DEBIAN/postinst << 'EOF'
           #!/bin/bash
-          chmod -R +x /opt/mos-lsi-tools/functions/
+          chmod -R +x /usr/bin/plugins/
           exit 0
           EOF
           chmod +x ${PKG_DIR}/DEBIAN/postinst
 
       - name: Build native .deb package
         run: |
-          PKG_DIR="mos-lsi-tools_amd64"
-          DEB_FILE="mos-lsi-tools_${{ steps.version.outputs.VERSION }}_amd64.deb"
-          dpkg-deb --build ${PKG_DIR} ${DEB_FILE}
+          VERSION=${{ steps.version.outputs.VERSION }}
+          PKG_NAME="mos-lsi-tools-${VERSION}-1+mos-plugin"
+          PKG_DIR="${PKG_NAME}_amd64"
+          DEB_FILE="${PKG_NAME}_amd64.deb"
 
-      # --- NEW: Zip the entire workspace to satisfy the extraction framework ---
-      - name: Create Final MOS Hub Zip Wrapper
-        run: |
-          # Keep configurations and the deb package at the root of the archive folder
-          zip -r mos-lsi-tools.zip settings.json page README.md mos-lsi-tools_${{ steps.version.outputs.VERSION }}_amd64.deb
+          dpkg-deb --build ${PKG_DIR}
+          md5sum ${DEB_FILE} | awk '{print $1}' > ${DEB_FILE}.md5
 
-      - name: Upload Distribution Zip to Github Release
+      - name: Upload Native DEB to Github Release
         uses: softprops/action-gh-release@v2
         with:
-          files: mos-lsi-tools.zip
           tag_name: ${{ steps.version.outputs.VERSION }}
+          name: LSI Tools ${{ steps.version.outputs.VERSION }}
+          files: |
+            mos-lsi-tools-${{ steps.version.outputs.VERSION }}-1+mos-plugin_amd64.deb
+            mos-lsi-tools-${{ steps.version.outputs.VERSION }}-1+mos-plugin_amd64.deb.md5
           overwrite_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
