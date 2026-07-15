@@ -58,8 +58,8 @@ jobs:
           # 3. Copy Vite's compiled assets
           cp -R page/dist/mos-lsi-tools/* ${PKG_DIR}/var/www/mos-plugins/mos-lsi-tools/
 
-          # 4. EXPLICITLY copy plugin.config.js and settings.json into the web directory
-          cp plugin.config.js ${PKG_DIR}/var/www/mos-plugins/mos-lsi-tools/
+          # 4. EXPLICITLY copy configuration anchors from the page folder source
+          cp page/plugin.config.js ${PKG_DIR}/var/www/mos-plugins/mos-lsi-tools/
           cp settings.json ${PKG_DIR}/var/www/mos-plugins/mos-lsi-tools/ || true
 
           # 5. Create standard DEBIAN control file metadata
