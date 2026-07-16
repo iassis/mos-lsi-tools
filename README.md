@@ -11,9 +11,9 @@ This allows users to easily manage, flash and monitor their LSI Host Bus Adapter
 Note: This is a CLI-only plugin. It runs entirely via the terminal, so no web GUI components or dashboard pages are installed.
 
 ### Included Binaries
-* `storcli64` (v007.3703.0000.0000)
-* `sas3flash` (vP15)
-* `megacli64` (v8.07)
+* `storcli64`
+* `sas3flash`
+* `megacli64`
 
 ---
 
@@ -24,28 +24,28 @@ After installing the plugin via the MOS Hub, you must execute the application wi
 ### storcli
 ```bash
 # Show summary of all controllers
-sudo storcli64 show
+storcli64 show
 
 # Show detailed information for Controller 0
-sudo storcli64 /c0 show
+storcli64 /c0 show
 ```
 
 ### sas3flash
 ```bash
 # List all Broadcom/LSI adapters detected in the system
-sudo sas3flash -listall
+sas3flash -listall
 
 # Show detailed information for the primary adapter (including SAS address and firmware version)
-sudo sas3flash -list
+sas3flash -list
 ```
 
 ### Megacli
 ```bash
 # View detailed information about all RAID adapters
-sudo megacli64 -AdpAllInfo -aALL
+megacli64 -AdpAllInfo -aALL
 
 # List all physical drives connected to the controllers
-sudo megacli64 -PDList -aALL
+megacli64 -PDList -aALL
 ```
 
 ---
