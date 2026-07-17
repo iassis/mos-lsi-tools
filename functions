@@ -1,96 +1,93 @@
 #!/bin/bash
 
-install_plugin() {
-    echo "Starting installation of LSI HBA tools..."
+PLG_DIR="/boot/optional/plugins/mos-lsi-tools"
 
-    # Create working directory
-    mkdir -p /tmp/lsi_setup
-    cd /tmp/lsi_setup
+deploy_binaries() {
+  if [ ! -f "$PLG_DIR/bin/lsi-tools.tar.gz" ] ; then
+    echo "LSI tools archive not found at $PLG_DIR/bin/lsi-tools.tar.gz"
+    return 1
+  fi
 
-    # 1. Install StorCLI (v007.3703)
-    echo "Downloading and extracting StorCLI..."
-    wget -q -O storcli.zip "https://docs.broadcom.com/docs-and-downloads/007.3703.0000.0000_MR%207.37_Storcli.zip"
-    
-    # Extract the 1st zip
-    unzip -q storcli.zip
-    
-    # Extract the 2nd zip
-    unzip -q -j "storcli_rel/Unified_storcli_all_os.zip" "*Ubuntu/storcli*_all.deb"
-    
-    # Unpack the deb package
-    dpkg-deb -x storcli_007.3703.0000.0000_all.deb ./extracted_deb
-    
-    # Move the binary
-    if [ -f "./extracted_deb/opt/MegaRAID/storcli/storcli64" ]; then
-        cp ./extracted_deb/opt/MegaRAID/storcli/storcli64 /usr/sbin/storcli64
-        chmod +x /usr/sbin/storcli64
-        echo "storcli64 installed successfully."
-    else
-        echo "Error: storcli64 binary extraction failed."
-    fi
-
-    # Wipe working directory
-    rm -rf /tmp/lsi_setup/*
-
-    # 2. Install sas3flash (P15)
-    echo "Downloading and extracting sas3flash..."
-    wget -q -O sas3flash.zip "https://docs.broadcom.com/docs-and-downloads/host-bus-adapters/host-bus-adapters-common-files/sas_sata_12g_p15/SAS3FLASH_P15.zip"
-    
-    # Extract the linux binary
-    unzip -q -j sas3flash.zip "*/sas3flash_linux_x64_rel/sas3flash"
-    
-    if [ -f "sas3flash" ]; then
-        cp sas3flash /usr/sbin/sas3flash
-        chmod +x /usr/sbin/sas3flash
-        echo "sas3flash installed successfully."
-    else
-        echo "Error: sas3flash binary extraction failed."
-    fi
-
-    # Wipe working directory
-    rm -rf /tmp/lsi_setup/*
-
-    # 3. Install MegaCLI
-    echo "Downloading and extracting MegaCLI..."
-    wget -q -O megacli.zip "https://docs.broadcom.com/docs-and-downloads/raid-controllers/raid-controllers-common-files/8-07-14_MegaCLI.zip"
-    
-    # Extract the 1st zip file path
-    unzip -q -j megacli.zip "FreeBSD/MegaCli64.zip"
-    unzip -q -j MegaCli64.zip "MegaCli64"
-    
-    # Copy the file to execution directory
-    if [ -f "MegaCli64" ]; then
-        cp MegaCli64 /usr/sbin/megacli64
-        chmod +x /usr/sbin/megacli64
-        echo "megacli64 installed successfully."
-    else
-        echo "Error: megacli64 extraction failed."
-    fi
-
-    # Cleaning up
-    rm -rf /tmp/lsi_setup
-    echo "All LSI HBA tools deployment complete!"
+  tar -xzf "$PLG_DIR/bin/lsi-tools.tar.gz" -C /usr/sbin
+  chmod +x /usr/sbin/storcli64 /usr/sbin/sas3flash /usr/sbin/megacli64
 }
 
-uninstall_plugin() {
-    echo "Removing LSI HBA tools..."
-    
-    rm -f /usr/sbin/storcli64
-    rm -f /usr/sbin/sas3flash
-    rm -f /usr/sbin/megacli64
-    
-    echo "LSI HBA tools removed cleanly."
+install() {
+  echo "Starting installation of LSI HBA tools..."
+
+  mkdir -p /tmp/lsi_setup/bundle
+  cd /tmp/lsi_setup
+
+  # 1. Install StorCLI
+  echo "Downloading and extracting StorCLI..."
+  wget -q -O /tmp/lsi_setup/storcli.zip "https://docs.broadcom.com/docs-and-downloads/007.3703.0000.0000_MR%207.37_Storcli.zip"
+
+  unzip -q /tmp/lsi_setup/storcli.zip -d /tmp/lsi_setup
+  unzip -q -j "/tmp/lsi_setup/storcli_rel/Unified_storcli_all_os.zip" "*Ubuntu/storcli*_all.deb" -d /tmp/lsi_setup
+  dpkg-deb -x /tmp/lsi_setup/storcli_007.3703.0000.0000_all.deb /tmp/lsi_setup/extracted_deb
+
+  if [ -f "/tmp/lsi_setup/extracted_deb/opt/MegaRAID/storcli/storcli64" ] ; then
+    cp "/tmp/lsi_setup/extracted_deb/opt/MegaRAID/storcli/storcli64" /tmp/lsi_setup/bundle/storcli64
+    echo "storcli64 extracted successfully."
+  else
+    echo "Error: storcli64 binary extraction failed."
+    return 1
+  fi
+
+  rm -rf /tmp/lsi_setup/storcli.zip /tmp/lsi_setup/storcli_rel /tmp/lsi_setup/extracted_deb /tmp/lsi_setup/storcli_007.3703.0000.0000_all.deb
+
+  # 2. Install sas3flash
+  echo "Downloading and extracting sas3flash..."
+  wget -q -O /tmp/lsi_setup/sas3flash.zip "https://docs.broadcom.com/docs-and-downloads/host-bus-adapters/host-bus-adapters-common-files/sas_sata_12g_p15/SAS3FLASH_P15.zip"
+
+  unzip -q -j /tmp/lsi_setup/sas3flash.zip "*/sas3flash_linux_x64_rel/sas3flash" -d /tmp/lsi_setup
+
+  if [ -f "/tmp/lsi_setup/sas3flash" ] ; then
+    cp /tmp/lsi_setup/sas3flash /tmp/lsi_setup/bundle/sas3flash
+    echo "sas3flash extracted successfully."
+  else
+    echo "Error: sas3flash binary extraction failed."
+    return 1
+  fi
+
+  rm -f /tmp/lsi_setup/sas3flash.zip /tmp/lsi_setup/sas3flash
+
+  # 3. Install MegaCLI
+  echo "Downloading and extracting MegaCLI..."
+  wget -q -O /tmp/lsi_setup/megacli.zip "https://docs.broadcom.com/docs-and-downloads/raid-controllers/raid-controllers-common-files/8-07-14_MegaCLI.zip"
+
+  unzip -q -j /tmp/lsi_setup/megacli.zip "FreeBSD/MegaCli64.zip" -d /tmp/lsi_setup
+  unzip -q -j /tmp/lsi_setup/MegaCli64.zip "MegaCli64" -d /tmp/lsi_setup
+
+  if [ -f "/tmp/lsi_setup/MegaCli64" ] ; then
+    cp /tmp/lsi_setup/MegaCli64 /tmp/lsi_setup/bundle/megacli64
+    echo "megacli64 extracted successfully."
+  else
+    echo "Error: megacli64 binary extraction failed."
+    return 1
+  fi
+
+  mkdir -p "$PLG_DIR/bin"
+  tar -czf "$PLG_DIR/bin/lsi-tools.tar.gz" -C /tmp/lsi_setup/bundle storcli64 sas3flash megacli64
+
+  deploy_binaries || return 1
+
+  rm -rf /tmp/lsi_setup
+  echo "All LSI HBA tools deployment complete!"
 }
 
-case "$1" in
-    install)
-        install_plugin
-        ;;
-    uninstall)
-        uninstall_plugin
-        ;;
-    *)
-        echo "Usage: $0 {install|uninstall}"
-        exit 1
-        ;;
-esac
+uninstall() {
+  echo "Removing LSI HBA tools..."
+
+  rm -f /usr/sbin/storcli64 /usr/sbin/sas3flash /usr/sbin/megacli64
+  rm -rf "$PLG_DIR/bin"
+
+  echo "LSI HBA tools removed cleanly."
+}
+
+mos_start() {
+  if [ -f "$PLG_DIR/bin/lsi-tools.tar.gz" ] ; then
+    tar -xzf "$PLG_DIR/bin/lsi-tools.tar.gz" -C /usr/sbin
+    chmod +x /usr/sbin/storcli64 /usr/sbin/sas3flash /usr/sbin/megacli64
+  fi
+}

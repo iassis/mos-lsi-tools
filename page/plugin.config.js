@@ -3,7 +3,7 @@ export default {
   displayName: 'MOS LSI Tools',
   description: 'LSI tools for managing HBAs and expanders',
   version: '1.0.3',
-  icon: 'https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/broadcom.svg',
+  icon: '',
   author: 'iassis',
   homepage: 'https://github.com/iassis/mos-lsi-tools',
 };
