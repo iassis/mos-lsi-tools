@@ -8,14 +8,15 @@ deploy_binaries() {
     return 1
   fi
 
-  tar -xzf "$PLG_DIR/bin/lsi-tools.tar.gz" -C /usr/sbin
-  chmod +x /usr/sbin/storcli64 /usr/sbin/sas3flash /usr/sbin/megacli64
+  tar -xzf "$PLG_DIR/bin/lsi-tools.tar.gz" -C /
+  chmod +x /usr/sbin/storcli64 /usr/sbin/sas3flash /usr/sbin/MegaCli64 /usr/sbin/MegaCli
+  ln -s /lib/x86_64-linux-gnu/libncurses.so.6 /lib/x86_64-linux-gnu/libncurses.so.5
 }
 
 install() {
   echo "Starting installation of LSI HBA tools..."
 
-  mkdir -p /tmp/lsi_setup/bundle
+  mkdir -p /tmp/lsi_setup/bundle/bin/sbin /tmp/lsi_setup/bundle/lib/x86_64-linux-gnu
   cd /tmp/lsi_setup
 
   # 1. Install StorCLI
@@ -27,7 +28,7 @@ install() {
   dpkg-deb -x /tmp/lsi_setup/storcli_007.3703.0000.0000_all.deb /tmp/lsi_setup/extracted_deb
 
   if [ -f "/tmp/lsi_setup/extracted_deb/opt/MegaRAID/storcli/storcli64" ] ; then
-    cp "/tmp/lsi_setup/extracted_deb/opt/MegaRAID/storcli/storcli64" /tmp/lsi_setup/bundle/storcli64
+    cp "/tmp/lsi_setup/extracted_deb/opt/MegaRAID/storcli/storcli64" /tmp/lsi_setup/bundle/bin/sbin/storcli64
     echo "storcli64 extracted successfully."
   else
     echo "Error: storcli64 binary extraction failed."
@@ -43,7 +44,7 @@ install() {
   unzip -q -j /tmp/lsi_setup/sas3flash.zip "*/sas3flash_linux_x64_rel/sas3flash" -d /tmp/lsi_setup
 
   if [ -f "/tmp/lsi_setup/sas3flash" ] ; then
-    cp /tmp/lsi_setup/sas3flash /tmp/lsi_setup/bundle/sas3flash
+    cp /tmp/lsi_setup/sas3flash /tmp/lsi_setup/bundle/bin/sbin/sas3flash
     echo "sas3flash extracted successfully."
   else
     echo "Error: sas3flash binary extraction failed."
@@ -56,11 +57,14 @@ install() {
   echo "Downloading and extracting MegaCLI..."
   wget -q -O /tmp/lsi_setup/megacli.zip "https://docs.broadcom.com/docs-and-downloads/raid-controllers/raid-controllers-common-files/8-07-14_MegaCLI.zip"
 
-  unzip -q -j /tmp/lsi_setup/megacli.zip "FreeBSD/MegaCli64.zip" -d /tmp/lsi_setup
-  unzip -q -j /tmp/lsi_setup/MegaCli64.zip "MegaCli64" -d /tmp/lsi_setup
+  unzip -q -j /tmp/lsi_setup/megacli.zip "Linux/MegaCli-8.07.14-1.noarch.rpm" -d /tmp/lsi_setup
+  offset=$(grep -abo $'\x1f\x8b' /tmp/lsi_setup/MegaCli-8.07.14-1.noarch.rpm | head -1 | cut -d: -f1)
+  tail -c +$((offset+1)) /tmp/lsi_setup/MegaCli-8.07.14-1.noarch.rpm | gzip -d | cpio -idmv
 
-  if [ -f "/tmp/lsi_setup/MegaCli64" ] ; then
-    cp /tmp/lsi_setup/MegaCli64 /tmp/lsi_setup/bundle/megacli64
+  if [ -f "/tmp/lsi_setup/opt/MegaRAID/MegaCli/MegaCli64" ] ; then
+    cp /tmp/lsi_setup/opt/MegaRAID/MegaCli/MegaCli64 /tmp/lsi_setup/bundle/bin/sbin/MegaCli64
+    cp /tmp/lsi_setup/opt/MegaRAID/MegaCli/MegaCli /tmp/lsi_setup/bundle/bin/sbin/MegaCli
+    cp /tmp/lsi_setup/opt/MegaRAID/MegaCli/libstorelibir-2.so.14.07-0 /tmp/lsi_setup/bundle/lib/x86_64-linux-gnu/
     echo "megacli64 extracted successfully."
   else
     echo "Error: megacli64 binary extraction failed."
@@ -68,7 +72,8 @@ install() {
   fi
 
   mkdir -p "$PLG_DIR/bin"
-  tar -czf "$PLG_DIR/bin/lsi-tools.tar.gz" -C /tmp/lsi_setup/bundle storcli64 sas3flash megacli64
+  cd /tmp/lsi_setup/bundle
+  tar -czf "$PLG_DIR/bin/lsi-tools.tar.gz" .
 
   deploy_binaries || return 1
 
@@ -79,7 +84,7 @@ install() {
 uninstall() {
   echo "Removing LSI HBA tools..."
 
-  rm -f /usr/sbin/storcli64 /usr/sbin/sas3flash /usr/sbin/megacli64
+  rm -f /usr/sbin/storcli64 /usr/sbin/sas3flash /usr/sbin/MegaCli64 /usr/sbin/MegaCli /lib/x86_64-linux-gnu/libstorelibir-2.so.14.07-0
   rm -rf "$PLG_DIR/bin"
 
   echo "LSI HBA tools removed cleanly."
@@ -87,7 +92,7 @@ uninstall() {
 
 mos_start() {
   if [ -f "$PLG_DIR/bin/lsi-tools.tar.gz" ] ; then
-    tar -xzf "$PLG_DIR/bin/lsi-tools.tar.gz" -C /usr/sbin
-    chmod +x /usr/sbin/storcli64 /usr/sbin/sas3flash /usr/sbin/megacli64
+    tar -xzf "$PLG_DIR/bin/lsi-tools.tar.gz" -C /
+    chmod +x /usr/sbin/storcli64 /usr/sbin/sas3flash /usr/sbin/MegaCli64 /usr/sbin/MegaCli
   fi
 }
